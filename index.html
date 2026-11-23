@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerala Official Ticket Booking Portal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #0f2027 100%); color: #ffffff; min-height: 100vh; padding: 10px; }
+        
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 12px 20px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: 10px; }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .top-bar h2 { font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .top-offer-btn { background: #f59e0b; color: #ffffff; border: none; padding: 8px 14px; font-size: 12px; font-weight: bold; border-radius: 20px; cursor: pointer; }
+        .top-offer-btn:hover { background: #d97706; }
+
+        .info-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.3); padding: 8px 15px; border-radius: 8px; margin-bottom: 10px; gap: 10px; }
+        .ticker-container { flex: 1; overflow: hidden; white-space: nowrap; }
+        .ticker-text { display: inline-block; animation: marquee 15s linear infinite; font-size: 12px; font-weight: bold; color: #fde047; }
+        @keyframes marquee { 0% { transform: translate(100%, 0); } 100% { transform: translate(-100%, 0); } }
+        .live-status-bar { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #38bdf8; white-space: nowrap; }
+        .blink-dot { width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+
+        .main-layout { display: grid; grid-template-columns: 350px 1fr; gap: 10px; }
+        @media (max-width: 800px) { .main-layout { grid-template-columns: 1fr; } }
+
+        .panel { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; padding: 15px; }
+
+        .ticket-type-selector { display: flex; gap: 10px; margin-bottom: 12px; }
+        .type-card { flex: 1; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; background: rgba(255, 255, 255, 0.05); }
+        .type-card.active { border-color: #38bdf8; background: rgba(56, 189, 248, 0.15); }
+        .type-card h4 { margin: 0 0 3px 0; font-size: 14px; }
+        .type-card .price { color: #f87171; font-weight: bold; font-size: 15px; }
+
+        .ticket { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 12px; box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4); }
+        .ticket-number { font-size: 15px; font-weight: bold; letter-spacing: 1px; background: rgba(0, 0, 0, 0.25); padding: 10px; border-radius: 6px; display: block; border: 1px dashed rgba(255, 255, 255, 0.5); margin: 8px 0; max-height: 120px; overflow-y: auto; color: #fef08a; word-break: break-all; }
+
+        .btn { background-color: #f59e0b; color: white; border: none; padding: 10px; font-size: 14px; border-radius: 6px; cursor: pointer; width: 100%; margin-bottom: 8px; font-weight: bold; }
+        .btn:hover { background-color: #d97706; }
+        .whatsapp-btn { background-color: #10b981; margin-bottom: 0; }
+        .whatsapp-btn:hover { background-color: #059669; }
+
+        .grid-section-title { font-size: 13px; font-weight: bold; color: #38bdf8; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .ticket-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; max-height: 400px; overflow-y: auto; background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .grid-item { background: rgba(255, 255, 255, 0.95); border: 1px solid #cbd5e1; padding: 8px 2px; text-align: center; font-size: 12px; font-weight: bold; color: #0f172a; border-radius: 4px; cursor: pointer; }
+        .grid-item.selected { background: #0284c7; color: white; border-color: #38bdf8; }
+
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        .modal-content { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); color: #f8fafc; width: 90%; max-width: 450px; padding: 20px; border-radius: 12px; max-height: 90vh; overflow-y: auto; position: relative; border: 2px solid #3b82f6; }
+        .close-btn { position: absolute; top: 10px; right: 15px; color: #93c5fd; font-size: 24px; font-weight: bold; cursor: pointer; }
+        .prize-table { width: 100%; margin-top: 10px; font-size: 12px; border-collapse: collapse; }
+        .prize-table th, .prize-table td { padding: 5px 6px; border-bottom: 1px solid rgba(255,255,255,0.15); text-align: left; }
+        .prize-table th { color: #93c5fd; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="logo-area">
+            <span style="font-size: 24px;">🎟️</span>
+            <h2>Kerala Official Portal</h2>
+        </div>
+        <button class="top-offer-btn" onclick="openModal()">🔥 Mega Offer</button>
+    </div>
+
+    <div class="info-bar">
+        <div class="ticker-container">
+            <div class="ticker-text">⚡ 1st Draw: 03:00 PM | 2nd Draw: 08:00 PM | Book Your Lucky Ticket & Win Big! ⚡</div>
+        </div>
+        <div class="live-status-bar">
+            <span class="blink-dot"></span>
+            <span id="liveDateTime">Loading...</span>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <div class="panel">
+            <h3 style="color: #38bdf8; font-size: 14px; margin-bottom: 8px;">Select Category</h3>
+            <div class="ticket-type-selector">
+                <div class="type-card active" id="normalCard" onclick="selectTicketType('Normal', 149)">
+                    <h4>Normal</h4>
+                    <div class="price">₹149</div>
+                </div>
+                <div class="type-card" id="vipCard" onclick="selectTicketType('VIP', 499)">
+                    <h4>VIP</h4>
+                    <div class="price">₹499</div>
+                </div>
+            </div>
+
+            <div class="ticket">
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;" id="selectedCategoryTitle">NORMAL TICKET (₹149)</div>
+                <div class="ticket-number" id="ticketDisplay">No ticket selected</div>
+                <div style="font-size: 11px;" id="selectionCount">Selected: 0 tickets</div>
+            </div>
+
+            <button class="btn" onclick="generateAllTickets()">Refresh All Tickets</button>
+            <button class="btn whatsapp-btn" onclick="sendToWhatsApp()">Send to WhatsApp</button>
+        </div>
+
+        <div class="panel">
+            <div class="grid-section-title">
+                <span>Available Tickets (100)</span>
+                <span style="font-size: 11px; color: #38bdf8;">Tap to select</span>
+            </div>
+            <div class="ticket-grid" id="ticketGridContainer"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="offerModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h3 style="color: #60a5fa; text-align: center; margin-top: 0; font-size: 16px;">✨ Mega Bumper Offer ✨</h3>
+            <p style="text-align: center; color: #fbbf24; font-size: 13px; font-weight: bold; margin: 4px 0;">Chance to win ₹25 CRORE 💰</p>
+            <table class="prize-table">
+                <tr><th>Rank</th><th>Prize</th><th>Winners</th></tr>
+                <tr><td>1st Prize</td><td>₹25 Crore</td><td>1 Person</td></tr>
+                <tr><td>2nd Prize</td><td>₹12 Crore</td><td>1 Person</td></tr>
+                <tr><td>3rd Prize</td><td>₹75 Lakh</td><td>1 Person</td></tr>
+            </table>
+            <div style="text-align: center; margin-top: 10px; font-size: 12px; color: #34d399; font-weight: bold;">
+                Helpline: 6207690570
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentType = "Normal";
+        let currentPrice = 149;
+        let selectedTickets = [];
+
+        function openModal() { document.getElementById('offerModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('offerModal').style.display = 'none'; }
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            document.getElementById('liveDateTime').innerText = now.toLocaleDateString('en-IN', options);
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        function selectTicketType(type, price) {
+            currentType = type;
+            currentPrice = price;
+            selectedTickets = [];
+            if(type === 'Normal') {
+                document.getElementById('normalCard').classList.add('active');
+                document.getElementById('vipCard').classList.remove('active');
+                document.getElementById('selectedCategoryTitle').innerText = "NORMAL TICKET (₹149)";
+            } else {
+                document.getElementById('vipCard').classList.add('active');
+                document.getElementById('normalCard').classList.remove('active');
+                document.getElementById('selectedCategoryTitle').innerText = "VIP TICKET (₹499)";
+            }
+            generateAllTickets();
+        }
+
+        function generateAllTickets() {
+            selectedTickets = [];
+            const prefix = currentType === 'VIP' ? 'KLV' : 'KL';
+            const gridContainer = document.getElementById('ticketGridContainer');
+            gridContainer.innerHTML = '';
+
+            for (let i = 0; i < 100; i++) {
+                const randomNum = Math.floor(100000 + Math.random() * 900000);
+                const ticketStr = `${prefix} ${randomNum}`;
+                const item = document.createElement('div');
+                item.className = 'grid-item';
+                item.innerText = ticketStr;
+                item.onclick = () => toggleTicketSelection(ticketStr, item);
+                gridContainer.appendChild(item);
+            }
+            updateDisplay();
+        }
+
+        function toggleTicketSelection(ticketStr, element) {
+            const index = selectedTickets.indexOf(ticketStr);
+            if (index > -1) {
+                selectedTickets.splice(index, 1);
+                element.classList.remove('selected');
+            } else {
+                selectedTickets.push(ticketStr);
+                element.classList.add('selected');
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const displayEl = document.getElementById('ticketDisplay');
+            const countEl = document.getElementById('selectionCount');
+            if (selectedTickets.length > 0) {
+                displayEl.innerText = selectedTickets.join(', ');
+                countEl.innerText = `Selected: ${selectedTickets.length} ticket(s) | Total: ₹${selectedTickets.length * currentPrice}`;
+            } else {
+                displayEl.innerText = "No ticket selected";
+                countEl.innerText = "Selected: 0 tickets";
+            }
+        }
+
+        function sendToWhatsApp() {
+            if (selectedTickets.length === 0) {
+                alert("Kam se kam ek ticket select karein!");
+                return;
+            }
+            const phoneNumber = "916207690570";
+            const totalAmount = selectedTickets.length * currentPrice;
+            const message = `Hello, maine ${currentType} Ticket category se ${selectedTickets.length} tickets select kiye hain.\n\nTicket Numbers: ${selectedTickets.join(', ')}\nTotal Amount: ₹${totalAmount}`;
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        window.onload = generateAllTickets;
+    </script>
+</body>
+</html>
